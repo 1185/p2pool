@@ -359,7 +359,20 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
         tx_explorer_url_prefix=node.net.PARENT.TX_EXPLORER_URL_PREFIX,
     )))
     new_root.putChild('version', WebInterface(lambda: p2pool.__version__))
-    
+
+    def get_block_versions(mask='00'):
+        mask = int(mask, 16)
+        best_share_hash = node.best_share_var.value
+        counts = {}
+        found = 0
+        if node.tracker.get_height(best_share_hash) >= node.net.CHAIN_LENGTH:
+            for share in node.tracker.get_chain(best_share_hash, node.net.CHAIN_LENGTH//10):
+                counts[share.min_header['version']] = counts.get(share.min_header['version'], 0) + 1
+                if share.min_header['version'] & mask: found += 1
+        return dict(counts=dict(('%08X' % v, counts[v]) for v in counts), total=node.net.CHAIN_LENGTH//10, found=found)
+
+    new_root.putChild('block_versions', WebInterface(get_block_versions))
+
     hd_path = os.path.join(datadir_path, 'graph_db')
     hd_data = _atomic_read(hd_path)
     hd_obj = {}
