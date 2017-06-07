@@ -5,6 +5,7 @@ import os
 import random
 import sys
 import time
+import array
 
 from twisted.python import log
 
@@ -156,6 +157,11 @@ class NewShare(object):
                 this = [0, len(new_transaction_hashes)-1]
             transaction_hash_refs.extend(this)
             other_transaction_hashes.append(tx_hash)
+
+        if transaction_hash_refs and max(transaction_hash_refs) < 2**16:
+            transaction_hash_refs = array.array('H', transaction_hash_refs)
+        elif transaction_hash_refs and max(transaction_hash_refs) < 2**32: # in case we see blocks with more than 65536 tx
+            transaction_hash_refs = array.array('L', transaction_hash_refs)
         
         included_transactions = set(other_transaction_hashes)
         removed_fees = [fee for tx_hash, fee in desired_other_transaction_hashes_and_fees if tx_hash not in included_transactions]
@@ -244,6 +250,13 @@ class NewShare(object):
         self.share_info = contents['share_info']
         self.hash_link = contents['hash_link']
         self.merkle_link = contents['merkle_link']
+
+        # save some memory if we can
+        txrefs = self.share_info['transaction_hash_refs']
+        if txrefs and max(txrefs) < 2**16:
+            self.share_info['transaction_hash_refs'] = array.array('H', txrefs)
+        elif txrefs and max(txrefs) < 2**32: # in case we see blocks with more than 65536 tx in the future
+            self.share_info['transaction_hash_refs'] = array.array('L', txrefs)
         
         if not (2 <= len(self.share_info['share_data']['coinbase']) <= 100):
             raise ValueError('''bad coinbase size! %i bytes''' % (len(self.share_info['share_data']['coinbase']),))
