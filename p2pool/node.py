@@ -249,7 +249,7 @@ class Node(object):
         @self.factory.new_tx.watch
         def _(tx):
             self.known_txs_var.add({
-                bitcoin_data.hash256(bitcoin_data.tx_type.pack(tx)): tx,
+                bitcoin_data.single_hash256(bitcoin_data.tx_type.pack(tx)): tx,
             })
         # forward transactions seen to bitcoind
         @self.known_txs_var.transitioned.watch
