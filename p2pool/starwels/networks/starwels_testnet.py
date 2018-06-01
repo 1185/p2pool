@@ -8,7 +8,7 @@ from p2pool.util import pack
 
 
 P2P_PREFIX = '0b110907'.decode('hex')
-P2P_PORT = 18333
+P2P_PORT = 18353
 ADDRESS_VERSION = 111
 RPC_PORT = 18332
 RPC_CHECK = defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
@@ -18,7 +18,7 @@ RPC_CHECK = defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
 SUBSIDY_FUNC = lambda height: 50*100000000 >> (height + 1)//210000
 POW_FUNC = data.hash256
 BLOCK_PERIOD = 600 # s
-SYMBOL = 'tBTC'
+SYMBOL = 'tMAI'
 CONF_FILE_FUNC = lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Starwels') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Starwels/') if platform.system() == 'Darwin' else os.path.expanduser('~/.starwels'), 'starwels.conf')
 BLOCK_EXPLORER_URL_PREFIX = 'http://blockexplorer.com/testnet/block/'
 ADDRESS_EXPLORER_URL_PREFIX = 'http://blockexplorer.com/testnet/address/'

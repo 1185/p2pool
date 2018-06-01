@@ -9,7 +9,7 @@ class Test(unittest.TestCase):
     @defer.inlineCallbacks
     def test_get_block(self):
         factory = p2p.ClientFactory(networks.nets['starwels'])
-        c = reactor.connectTCP('127.0.0.1', 8333, factory)
+        c = reactor.connectTCP('127.0.0.1', 8353, factory)
         try:
             h = 0x000000000000046acff93b0e76cd10490551bf871ce9ac9fad62e67a07ff1d1e
             block = yield deferral.retry()(defer.inlineCallbacks(lambda: defer.returnValue((yield (yield factory.getProtocol()).get_block(h)))))()
