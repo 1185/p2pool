@@ -1,4 +1,4 @@
-from p2pool.bitcoin import networks
+from p2pool.starwels import networks
 
 PARENT = networks.nets['litecoin']
 SHARE_PERIOD = 15 # seconds

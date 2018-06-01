@@ -1,4 +1,4 @@
-from p2pool.bitcoin import networks
+from p2pool.starwels import networks
 
 PARENT = networks.nets['fastcoin']
 SHARE_PERIOD = 6 # seconds
