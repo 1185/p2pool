@@ -8,9 +8,9 @@ from p2pool.util import pack
 
 
 P2P_PREFIX = 'fbc0b6db'.decode('hex')
-P2P_PORT = 9333
+P2P_PORT = 9343
 ADDRESS_VERSION = 48
-RPC_PORT = 9352
+RPC_PORT = 9342
 RPC_CHECK = defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
             (yield helper.check_genesis_block(starwelsd, '12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2')) and
             (yield starwelsd.rpc_getblockchaininfo())['chain'] != 'test'

@@ -25,11 +25,11 @@ configurations, using P2Pool should be as simple as:
 
     python run_p2pool.py
 
-Then run your miner program, connecting to 127.0.0.1 on port 9352 with any
+Then run your miner program, connecting to 127.0.0.1 on port 9342 with any
 username and password.
 
 If you are behind a NAT, you should enable TCP port forwarding on your
-router. Forward port 9333 to the host running P2Pool.
+router. Forward port 9343 to the host running P2Pool.
 
 Run for additional options.
 
@@ -87,7 +87,7 @@ Run P2Pool with the "--net litecoin" option.
 Run your miner program, connecting to 127.0.0.1 on port 9327.
 Forward port 9338 to the host running P2Pool.
 
-Litecoin's use of ports 9333 and 9352 conflicts with P2Pool running on
+Litecoin's use of ports 9343 and 9342 conflicts with P2Pool running on
 the Starwels network. To avoid problems, add these lines to litecoin.conf
 and restart litecoind:
 

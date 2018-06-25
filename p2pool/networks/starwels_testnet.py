@@ -8,11 +8,11 @@ TARGET_LOOKBEHIND = 200 # shares
 SPREAD = 3 # blocks
 IDENTIFIER = '5fc2be2d4f0d7bfb'.decode('hex')
 PREFIX = '3f6057a15036f451'.decode('hex')
-P2P_PORT = 19333
+P2P_PORT = 19343
 MIN_TARGET = 0
 MAX_TARGET = 2**256//2**32 - 1
 PERSIST = False
-WORKER_PORT = 19352
+WORKER_PORT = 19342
 BOOTSTRAP_ADDRS = 'forre.st vps.forre.st liteco.in 78.158.149.247'.split(' ')
 ANNOUNCE_CHANNEL = '#p2pool-alt'
 VERSION_CHECK = lambda v: None if 100000 <= v else 'Starwels version too old. Upgrade to 0.11.2 or newer!' # not a bug. BIP65 support is ensured by SOFTFORKS_REQUIRED
