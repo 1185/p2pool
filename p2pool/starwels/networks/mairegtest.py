@@ -10,7 +10,7 @@ from p2pool.util import pack
 P2P_PREFIX = 'fabfb5da'.decode('hex')
 P2P_PORT = 18444
 ADDRESS_VERSION = 111
-RPC_PORT = 28332
+RPC_PORT = 28342
 RPC_CHECK = defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
             'starwelsaddress' in (yield starwelsd.rpc_help())
         ))
