@@ -24,7 +24,7 @@ try:
     sys.argv[1:] = ['py2exe']
     setup(name='p2pool',
         version=version,
-        description='Peer-to-peer Bitcoin mining pool',
+        description='Peer-to-peer Starwels mining pool',
         author='Forrest Voight',
         author_email='forrest@forre.st',
         url='http://p2pool.forre.st/',

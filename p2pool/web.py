@@ -12,7 +12,7 @@ from twisted.python import log
 from twisted.web import resource, static
 
 import p2pool
-from bitcoin import data as bitcoin_data
+from starwels import data as starwels_data
 from . import data as p2pool_data, p2p
 from util import deferral, deferred_resource, graph, math, memory, pack, variable
 
@@ -45,7 +45,7 @@ def _atomic_write(filename, data):
         os.remove(filename)
         os.rename(filename + '.new', filename)
 
-def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Event()):
+def get_web_root(wb, datadir_path, starwelsd_getinfo_var, stop_event=variable.Event()):
     node = wb.node
     start_time = time.time()
     
@@ -56,7 +56,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
         weights, total_weight, donation_weight = node.tracker.get_cumulative_weights(node.best_share_var.value, min(height, 720), 65535*2**256)
         res = {}
         for script in sorted(weights, key=lambda s: weights[s]):
-            res[bitcoin_data.script2_to_address(script, node.net.PARENT)] = weights[script]/total_weight
+            res[starwels_data.script2_to_address(script, node.net.PARENT)] = weights[script]/total_weight
         return res
     
     def get_current_scaled_txouts(scale, trunc=0):
@@ -86,9 +86,9 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
         total = int(float(total)*1e8)
         trunc = int(float(trunc)*1e8)
         return json.dumps(dict(
-            (bitcoin_data.script2_to_address(script, node.net.PARENT), value/1e8)
+            (starwels_data.script2_to_address(script, node.net.PARENT), value/1e8)
             for script, value in get_current_scaled_txouts(total, trunc).iteritems()
-            if bitcoin_data.script2_to_address(script, node.net.PARENT) is not None
+            if starwels_data.script2_to_address(script, node.net.PARENT) is not None
         ))
     
     def get_global_stats():
@@ -103,7 +103,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
             pool_nonstale_hash_rate=nonstale_hash_rate,
             pool_hash_rate=nonstale_hash_rate/(1 - stale_prop),
             pool_stale_prop=stale_prop,
-            min_difficulty=bitcoin_data.target_to_difficulty(node.tracker.items[node.best_share_var.value].max_target),
+            min_difficulty=starwels_data.target_to_difficulty(node.tracker.items[node.best_share_var.value].max_target),
         )
     
     def get_local_stats():
@@ -121,7 +121,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
         
         my_stale_prop = my_stale_count/my_share_count if my_share_count != 0 else None
         
-        my_work = sum(bitcoin_data.target_to_average_attempts(share.target)
+        my_work = sum(starwels_data.target_to_average_attempts(share.target)
             for share in node.tracker.get_chain(node.best_share_var.value, lookbehind - 1)
             if share.hash in wb.my_share_hashes)
         actual_time = (node.tracker.items[node.best_share_var.value].timestamp -
@@ -164,10 +164,10 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
                 dead=stale_doa_shares,
             ),
             uptime=time.time() - start_time,
-            attempts_to_share=bitcoin_data.target_to_average_attempts(node.tracker.items[node.best_share_var.value].max_target),
-            attempts_to_block=bitcoin_data.target_to_average_attempts(node.bitcoind_work.value['bits'].target),
-            block_value=node.bitcoind_work.value['subsidy']*1e-8,
-            warnings=p2pool_data.get_warnings(node.tracker, node.best_share_var.value, node.net, bitcoind_getinfo_var.value, node.bitcoind_work.value),
+            attempts_to_share=starwels_data.target_to_average_attempts(node.tracker.items[node.best_share_var.value].max_target),
+            attempts_to_block=starwels_data.target_to_average_attempts(node.starwelsd_work.value['bits'].target),
+            block_value=node.starwelsd_work.value['subsidy']*1e-8,
+            warnings=p2pool_data.get_warnings(node.tracker, node.best_share_var.value, node.net, starwelsd_getinfo_var.value, node.starwelsd_work.value),
             donation_proportion=wb.donation_percentage/100,
             version=p2pool.__version__,
             protocol_version=p2p.Protocol.VERSION,
@@ -192,12 +192,12 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
     def decent_height():
         return min(node.tracker.get_height(node.best_share_var.value), 720)
     web_root.putChild('rate', WebInterface(lambda: p2pool_data.get_pool_attempts_per_second(node.tracker, node.best_share_var.value, decent_height())/(1-p2pool_data.get_average_stale_prop(node.tracker, node.best_share_var.value, decent_height()))))
-    web_root.putChild('difficulty', WebInterface(lambda: bitcoin_data.target_to_difficulty(node.tracker.items[node.best_share_var.value].max_target)))
+    web_root.putChild('difficulty', WebInterface(lambda: starwels_data.target_to_difficulty(node.tracker.items[node.best_share_var.value].max_target)))
     web_root.putChild('users', WebInterface(get_users))
-    web_root.putChild('user_stales', WebInterface(lambda: dict((bitcoin_data.pubkey_hash_to_address(ph, node.net.PARENT), prop) for ph, prop in
+    web_root.putChild('user_stales', WebInterface(lambda: dict((starwels_data.pubkey_hash_to_address(ph, node.net.PARENT), prop) for ph, prop in
         p2pool_data.get_user_stale_props(node.tracker, node.best_share_var.value, node.tracker.get_height(node.best_share_var.value)).iteritems())))
     web_root.putChild('fee', WebInterface(lambda: wb.worker_fee))
-    web_root.putChild('current_payouts', WebInterface(lambda: dict((bitcoin_data.script2_to_address(script, node.net.PARENT), value/1e8) for script, value in node.get_current_txouts().iteritems())))
+    web_root.putChild('current_payouts', WebInterface(lambda: dict((starwels_data.script2_to_address(script, node.net.PARENT), value/1e8) for script, value in node.get_current_txouts().iteritems())))
     web_root.putChild('patron_sendmany', WebInterface(get_patron_sendmany, 'text/plain'))
     web_root.putChild('global_stats', WebInterface(get_global_stats))
     web_root.putChild('local_stats', WebInterface(get_local_stats))
@@ -214,7 +214,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
         ])
     ))))
     web_root.putChild('peer_versions', WebInterface(lambda: dict(('%s:%i' % peer.addr, peer.other_sub_version) for peer in node.p2p_node.peers.itervalues())))
-    web_root.putChild('payout_addr', WebInterface(lambda: bitcoin_data.pubkey_hash_to_address(wb.my_pubkey_hash, node.net.PARENT)))
+    web_root.putChild('payout_addr', WebInterface(lambda: starwels_data.pubkey_hash_to_address(wb.my_pubkey_hash, node.net.PARENT)))
     web_root.putChild('recent_blocks', WebInterface(lambda: [dict(
         ts=s.timestamp,
         hash='%064x' % s.header_hash,
@@ -255,14 +255,14 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
             shares=shares,
             stale_shares=stale_orphan_shares + stale_doa_shares,
             stale_shares_breakdown=dict(orphan=stale_orphan_shares, doa=stale_doa_shares),
-            current_payout=node.get_current_txouts().get(bitcoin_data.pubkey_hash_to_script2(wb.my_pubkey_hash), 0)*1e-8,
+            current_payout=node.get_current_txouts().get(starwels_data.pubkey_hash_to_script2(wb.my_pubkey_hash), 0)*1e-8,
             peers=dict(
                 incoming=sum(1 for peer in node.p2p_node.peers.itervalues() if peer.incoming),
                 outgoing=sum(1 for peer in node.p2p_node.peers.itervalues() if not peer.incoming),
             ),
-            attempts_to_share=bitcoin_data.target_to_average_attempts(node.tracker.items[node.best_share_var.value].max_target),
-            attempts_to_block=bitcoin_data.target_to_average_attempts(node.bitcoind_work.value['bits'].target),
-            block_value=node.bitcoind_work.value['subsidy']*1e-8,
+            attempts_to_share=starwels_data.target_to_average_attempts(node.tracker.items[node.best_share_var.value].max_target),
+            attempts_to_block=starwels_data.target_to_average_attempts(node.starwelsd_work.value['bits'].target),
+            block_value=node.starwelsd_work.value['subsidy']*1e-8,
         ))
         
         with open(os.path.join(datadir_path, 'stats'), 'wb') as f:
@@ -290,7 +290,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
                 timestamp=share.timestamp,
                 target=share.target,
                 max_target=share.max_target,
-                payout_address=bitcoin_data.script2_to_address(share.new_script, node.net.PARENT),
+                payout_address=starwels_data.script2_to_address(share.new_script, node.net.PARENT),
                 donation=share.share_data['donation']/65535,
                 stale_info=share.share_data['stale_info'],
                 nonce=share.share_data['nonce'],
@@ -417,9 +417,9 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
         hd.datastreams['pool_rates'].add_datum(t, pool_rates)
         
         current_txouts = node.get_current_txouts()
-        hd.datastreams['current_payout'].add_datum(t, current_txouts.get(bitcoin_data.pubkey_hash_to_script2(wb.my_pubkey_hash), 0)*1e-8)
+        hd.datastreams['current_payout'].add_datum(t, current_txouts.get(starwels_data.pubkey_hash_to_script2(wb.my_pubkey_hash), 0)*1e-8)
         miner_hash_rates, miner_dead_hash_rates = wb.get_local_rates()
-        current_txouts_by_address = dict((bitcoin_data.script2_to_address(script, node.net.PARENT), amount) for script, amount in current_txouts.iteritems())
+        current_txouts_by_address = dict((starwels_data.script2_to_address(script, node.net.PARENT), amount) for script, amount in current_txouts.iteritems())
         hd.datastreams['current_payouts'].add_datum(t, dict((user, current_txouts_by_address[user]*1e-8) for user in miner_hash_rates if user in current_txouts_by_address))
         
         hd.datastreams['peers'].add_datum(t, dict(
@@ -438,7 +438,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
     x = deferral.RobustLoopingCall(add_point)
     x.start(5)
     stop_event.watch(x.stop)
-    @node.bitcoind_work.changed.watch
+    @node.starwelsd_work.changed.watch
     def _(new_work):
         hd.datastreams['getwork_latency'].add_datum(time.time(), new_work['latency'])
     new_root.putChild('graph_data', WebInterface(lambda source, view: hd.datastreams[source].dataviews[view].get_data(time.time())))

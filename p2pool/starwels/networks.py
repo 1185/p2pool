@@ -7,20 +7,20 @@ from . import data
 from p2pool.util import math, pack
 
 nets = dict(
-    bitcoin=math.Object(
+    starwels=math.Object(
         P2P_PREFIX='f9beb4d9'.decode('hex'),
         P2P_PORT=8333,
         ADDRESS_VERSION=0,
         RPC_PORT=8332,
-        RPC_CHECK=defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'bitcoinaddress' in (yield bitcoind.rpc_help()) and
-            not (yield bitcoind.rpc_getinfo())['testnet']
+        RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'starwelsaddress' in (yield starwelsd.rpc_help()) and
+            not (yield starwelsd.rpc_getinfo())['testnet']
         )),
         SUBSIDY_FUNC=lambda height: 50*100000000 >> (height + 1)//210000,
         POW_FUNC=data.hash256,
         BLOCK_PERIOD=600, # s
-        SYMBOL='BTC',
-        CONF_FILE_FUNC=lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Bitcoin') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Bitcoin/') if platform.system() == 'Darwin' else os.path.expanduser('~/.bitcoin'), 'bitcoin.conf'),
+        SYMBOL='MAI',
+        CONF_FILE_FUNC=lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Starwels') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Starwels/') if platform.system() == 'Darwin' else os.path.expanduser('~/.starwels'), 'starwels.conf'),
         BLOCK_EXPLORER_URL_PREFIX='https://blockchain.info/block/',
         ADDRESS_EXPLORER_URL_PREFIX='https://blockchain.info/address/',
         TX_EXPLORER_URL_PREFIX='https://blockchain.info/tx/',
@@ -28,20 +28,20 @@ nets = dict(
         DUMB_SCRYPT_DIFF=1,
         DUST_THRESHOLD=0.001e8,
     ),
-    bitcoin_testnet=math.Object(
+    starwels_testnet=math.Object(
         P2P_PREFIX='0b110907'.decode('hex'),
         P2P_PORT=18333,
         ADDRESS_VERSION=111,
         RPC_PORT=18332,
-        RPC_CHECK=defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'bitcoinaddress' in (yield bitcoind.rpc_help()) and
-            (yield bitcoind.rpc_getinfo())['testnet']
+        RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'starwelsaddress' in (yield starwelsd.rpc_help()) and
+            (yield starwelsd.rpc_getinfo())['testnet']
         )),
         SUBSIDY_FUNC=lambda height: 50*100000000 >> (height + 1)//210000,
         POW_FUNC=data.hash256,
         BLOCK_PERIOD=600, # s
-        SYMBOL='tBTC',
-        CONF_FILE_FUNC=lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Bitcoin') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Bitcoin/') if platform.system() == 'Darwin' else os.path.expanduser('~/.bitcoin'), 'bitcoin.conf'),
+        SYMBOL='tMAI',
+        CONF_FILE_FUNC=lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Starwels') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Starwels/') if platform.system() == 'Darwin' else os.path.expanduser('~/.starwels'), 'starwels.conf'),
         BLOCK_EXPLORER_URL_PREFIX='http://blockexplorer.com/testnet/block/',
         ADDRESS_EXPLORER_URL_PREFIX='http://blockexplorer.com/testnet/address/',
         TX_EXPLORER_URL_PREFIX='http://blockexplorer.com/testnet/tx/',
@@ -55,15 +55,15 @@ nets = dict(
         P2P_PORT=8334,
         ADDRESS_VERSION=52,
         RPC_PORT=8332,
-        RPC_CHECK=defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'namecoinaddress' in (yield bitcoind.rpc_help()) and
-            not (yield bitcoind.rpc_getinfo())['testnet']
+        RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'namecoinaddress' in (yield starwelsd.rpc_help()) and
+            not (yield starwelsd.rpc_getinfo())['testnet']
         )),
         SUBSIDY_FUNC=lambda height: 50*100000000 >> (height + 1)//210000,
         POW_FUNC=data.hash256,
         BLOCK_PERIOD=600, # s
         SYMBOL='NMC',
-        CONF_FILE_FUNC=lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Namecoin') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Namecoin/') if platform.system() == 'Darwin' else os.path.expanduser('~/.namecoin'), 'bitcoin.conf'),
+        CONF_FILE_FUNC=lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Namecoin') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Namecoin/') if platform.system() == 'Darwin' else os.path.expanduser('~/.namecoin'), 'starwels.conf'),
         BLOCK_EXPLORER_URL_PREFIX='http://explorer.dot-bit.org/b/',
         ADDRESS_EXPLORER_URL_PREFIX='http://explorer.dot-bit.org/a/',
         TX_EXPLORER_URL_PREFIX='http://explorer.dot-bit.org/tx/',
@@ -76,15 +76,15 @@ nets = dict(
         P2P_PORT=18334,
         ADDRESS_VERSION=111,
         RPC_PORT=8332,
-        RPC_CHECK=defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'namecoinaddress' in (yield bitcoind.rpc_help()) and
-            (yield bitcoind.rpc_getinfo())['testnet']
+        RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'namecoinaddress' in (yield starwelsd.rpc_help()) and
+            (yield starwelsd.rpc_getinfo())['testnet']
         )),
         SUBSIDY_FUNC=lambda height: 50*100000000 >> (height + 1)//210000,
         POW_FUNC=data.hash256,
         BLOCK_PERIOD=600, # s
         SYMBOL='tNMC',
-        CONF_FILE_FUNC=lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Namecoin') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Namecoin/') if platform.system() == 'Darwin' else os.path.expanduser('~/.namecoin'), 'bitcoin.conf'),
+        CONF_FILE_FUNC=lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Namecoin') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Namecoin/') if platform.system() == 'Darwin' else os.path.expanduser('~/.namecoin'), 'starwels.conf'),
         BLOCK_EXPLORER_URL_PREFIX='http://testnet.explorer.dot-bit.org/b/',
         ADDRESS_EXPLORER_URL_PREFIX='http://testnet.explorer.dot-bit.org/a/',
         TX_EXPLORER_URL_PREFIX='http://testnet.explorer.dot-bit.org/tx/',
@@ -98,9 +98,9 @@ nets = dict(
         P2P_PORT=9333,
         ADDRESS_VERSION=48,
         RPC_PORT=9332,
-        RPC_CHECK=defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'litecoinaddress' in (yield bitcoind.rpc_help()) and
-            not (yield bitcoind.rpc_getinfo())['testnet']
+        RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'litecoinaddress' in (yield starwelsd.rpc_help()) and
+            not (yield starwelsd.rpc_getinfo())['testnet']
         )),
         SUBSIDY_FUNC=lambda height: 50*100000000 >> (height + 1)//840000,
         POW_FUNC=lambda data: pack.IntType(256).unpack(__import__('ltc_scrypt').getPoWHash(data)),
@@ -119,9 +119,9 @@ nets = dict(
         P2P_PORT=19333,
         ADDRESS_VERSION=111,
         RPC_PORT=19332,
-        RPC_CHECK=defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'litecoinaddress' in (yield bitcoind.rpc_help()) and
-            (yield bitcoind.rpc_getinfo())['testnet']
+        RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'litecoinaddress' in (yield starwelsd.rpc_help()) and
+            (yield starwelsd.rpc_getinfo())['testnet']
         )),
         SUBSIDY_FUNC=lambda height: 50*100000000 >> (height + 1)//840000,
         POW_FUNC=lambda data: pack.IntType(256).unpack(__import__('ltc_scrypt').getPoWHash(data)),
@@ -141,9 +141,9 @@ nets = dict(
         P2P_PORT=13333,
         ADDRESS_VERSION=0,
         RPC_PORT=13332,
-        RPC_CHECK=defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'terracoinaddress' in (yield bitcoind.rpc_help()) and
-            not (yield bitcoind.rpc_getinfo())['testnet']
+        RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'terracoinaddress' in (yield starwelsd.rpc_help()) and
+            not (yield starwelsd.rpc_getinfo())['testnet']
         )),
         SUBSIDY_FUNC=lambda height: 20*100000000 >> (height + 1)//1050000,
         POW_FUNC=data.hash256,
@@ -162,9 +162,9 @@ nets = dict(
         P2P_PORT=23333,
         ADDRESS_VERSION=111,
         RPC_PORT=23332,
-        RPC_CHECK=defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'terracoinaddress' in (yield bitcoind.rpc_help()) and
-            (yield bitcoind.rpc_getinfo())['testnet']
+        RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'terracoinaddress' in (yield starwelsd.rpc_help()) and
+            (yield starwelsd.rpc_getinfo())['testnet']
         )),
         SUBSIDY_FUNC=lambda height: 20*100000000 >> (height + 1)//1050000,
         POW_FUNC=data.hash256,
