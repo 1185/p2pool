@@ -9,16 +9,16 @@ from p2pool.util import math, pack
 nets = dict(
     starwels=math.Object(
         P2P_PREFIX='f9beb4d9'.decode('hex'),
-        P2P_PORT=8333,
+        P2P_PORT=8343,
         ADDRESS_VERSION=0,
-        RPC_PORT=8332,
+        RPC_PORT=8342,
         RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
             'starwelsaddress' in (yield starwelsd.rpc_help()) and
             not (yield starwelsd.rpc_getinfo())['testnet']
         )),
         SUBSIDY_FUNC=lambda height: 50*100000000 >> (height + 1)//210000,
         POW_FUNC=data.hash256,
-        BLOCK_PERIOD=600, # s
+        BLOCK_PERIOD=2, # s
         SYMBOL='MAI',
         CONF_FILE_FUNC=lambda: os.path.join(os.path.join(os.environ['APPDATA'], 'Starwels') if platform.system() == 'Windows' else os.path.expanduser('~/Library/Application Support/Starwels/') if platform.system() == 'Darwin' else os.path.expanduser('~/.starwels'), 'starwels.conf'),
         BLOCK_EXPLORER_URL_PREFIX='https://blockchain.info/block/',
@@ -30,9 +30,9 @@ nets = dict(
     ),
     starwels_testnet=math.Object(
         P2P_PREFIX='0b110907'.decode('hex'),
-        P2P_PORT=18333,
+        P2P_PORT=18343,
         ADDRESS_VERSION=111,
-        RPC_PORT=18332,
+        RPC_PORT=18342,
         RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
             'starwelsaddress' in (yield starwelsd.rpc_help()) and
             (yield starwelsd.rpc_getinfo())['testnet']
@@ -49,12 +49,12 @@ nets = dict(
         DUMB_SCRYPT_DIFF=1,
         DUST_THRESHOLD=1e8,
     ),
-    
+
     namecoin=math.Object(
         P2P_PREFIX='f9beb4fe'.decode('hex'),
         P2P_PORT=8334,
         ADDRESS_VERSION=52,
-        RPC_PORT=8332,
+        RPC_PORT=8342,
         RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
             'namecoinaddress' in (yield starwelsd.rpc_help()) and
             not (yield starwelsd.rpc_getinfo())['testnet']
@@ -75,7 +75,7 @@ nets = dict(
         P2P_PREFIX='fabfb5fe'.decode('hex'),
         P2P_PORT=18334,
         ADDRESS_VERSION=111,
-        RPC_PORT=8332,
+        RPC_PORT=8342,
         RPC_CHECK=defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
             'namecoinaddress' in (yield starwelsd.rpc_help()) and
             (yield starwelsd.rpc_getinfo())['testnet']
@@ -92,7 +92,7 @@ nets = dict(
         DUMB_SCRYPT_DIFF=1,
         DUST_THRESHOLD=1e8,
     ),
-    
+
     litecoin=math.Object(
         P2P_PREFIX='fbc0b6db'.decode('hex'),
         P2P_PORT=9333,
