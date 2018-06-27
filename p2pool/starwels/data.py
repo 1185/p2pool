@@ -11,33 +11,33 @@ def hash256(data):
     return pack.IntType(256).unpack(hashlib.sha256(hashlib.sha256(data).digest()).digest())
 
 def hash160(data):
-    if data == '04ffd03de44a6e11b9917f3a29f9443283d9871c9d743ef30d5eddcd37094b64d1b3d8090496b53256786bf5c82932ec23c3b74d9f05a6f95a8b5529352656664b'.decode('hex'):
-        return 0x384f570ccc88ac2e7e00b026d1690a3fca63dd0 # hack for people who don't have openssl - this is the only value that p2pool ever hashes
+    #if data == '04ffd03de44a6e11b9917f3a29f9443283d9871c9d743ef30d5eddcd37094b64d1b3d8090496b53256786bf5c82932ec23c3b74d9f05a6f95a8b5529352656664b'.decode('hex'):
+        #return 0x384f570ccc88ac2e7e00b026d1690a3fca63dd0 # hack for people who don't have openssl - this is the only value that p2pool ever hashes
     return pack.IntType(160).unpack(hashlib.new('ripemd160', hashlib.sha256(data).digest()).digest())
 
 class ChecksummedType(pack.Type):
     def __init__(self, inner, checksum_func=lambda data: hashlib.sha256(hashlib.sha256(data).digest()).digest()[:4]):
         self.inner = inner
         self.checksum_func = checksum_func
-    
+
     def read(self, file):
         obj, file = self.inner.read(file)
         data = self.inner.pack(obj)
-        
+
         calculated_checksum = self.checksum_func(data)
         checksum, file = pack.read(file, len(calculated_checksum))
         if checksum != calculated_checksum:
             raise ValueError('invalid checksum')
-        
+
         return obj, file
-    
+
     def write(self, file, item):
         data = self.inner.pack(item)
         return (file, data), self.checksum_func(data)
 
 class FloatingInteger(object):
     __slots__ = ['bits', '_target']
-    
+
     @classmethod
     def from_target_upper_bound(cls, target):
         n = math.natural_to_string(target)
@@ -46,42 +46,42 @@ class FloatingInteger(object):
         bits2 = (chr(len(n)) + (n + 3*chr(0))[:3])[::-1]
         bits = pack.IntType(32).unpack(bits2)
         return cls(bits)
-    
+
     def __init__(self, bits, target=None):
         self.bits = bits
         self._target = None
         if target is not None and self.target != target:
             raise ValueError('target does not match')
-    
+
     @property
     def target(self):
         res = self._target
         if res is None:
             res = self._target = math.shift_left(self.bits & 0x00ffffff, 8 * ((self.bits >> 24) - 3))
         return res
-    
+
     def __hash__(self):
         return hash(self.bits)
-    
+
     def __eq__(self, other):
         return self.bits == other.bits
-    
+
     def __ne__(self, other):
         return not (self == other)
-    
+
     def __cmp__(self, other):
         assert False
-    
+
     def __repr__(self):
         return 'FloatingInteger(bits=%s, target=%s)' % (hex(self.bits), hex(self.target))
 
 class FloatingIntegerType(pack.Type):
     _inner = pack.IntType(32)
-    
+
     def read(self, file):
         bits, file = self._inner.read(file)
         return FloatingInteger(bits), file
-    
+
     def write(self, file, item):
         return self._inner.write(file, item.bits)
 
@@ -179,9 +179,9 @@ def merkle_hash(hashes):
 
 def calculate_merkle_link(hashes, index):
     # XXX optimize this
-    
+
     hash_list = [(lambda _h=h: _h, i == index, []) for i, h in enumerate(hashes)]
-    
+
     while len(hash_list) > 1:
         hash_list = [
             (
@@ -192,16 +192,16 @@ def calculate_merkle_link(hashes, index):
             for (left, left_f, left_l), (right, right_f, right_l) in
                 zip(hash_list[::2], hash_list[1::2] + [hash_list[::2][-1]])
         ]
-    
+
     res = [x['hash']() for x in hash_list[0][2]]
-    
+
     assert hash_list[0][1]
     if p2pool.DEBUG:
         new_hashes = [random.randrange(2**256) if x is None else x
             for x in hashes]
         assert check_merkle_link(new_hashes[index], dict(branch=res, index=index)) == merkle_hash(new_hashes)
     assert index == sum(k*2**i for i, k in enumerate([1-x['side'] for x in hash_list[0][2]]))
-    
+
     return dict(branch=res, index=index)
 
 def check_merkle_link(tip_hash, link):
@@ -280,7 +280,7 @@ def script2_to_address(script2, net):
     else:
         if script2_test == script2:
             return pubkey_to_address(pubkey, net)
-    
+
     try:
         pubkey_hash = pack.IntType(160).unpack(script2[3:-2])
         script2_test2 = pubkey_hash_to_script2(pubkey_hash)
@@ -299,7 +299,7 @@ def script2_to_human(script2, net):
     else:
         if script2_test == script2:
             return 'Pubkey. Address: %s' % (pubkey_to_address(pubkey, net),)
-    
+
     try:
         pubkey_hash = pack.IntType(160).unpack(script2[3:-2])
         script2_test2 = pubkey_hash_to_script2(pubkey_hash)
@@ -308,5 +308,5 @@ def script2_to_human(script2, net):
     else:
         if script2_test2 == script2:
             return 'Address. Address: %s' % (pubkey_hash_to_address(pubkey_hash, net),)
-    
+
     return 'Unknown. Script: %s'  % (script2.encode('hex'),)
