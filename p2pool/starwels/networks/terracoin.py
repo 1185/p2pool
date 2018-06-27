@@ -11,9 +11,9 @@ P2P_PREFIX = '42babe56'.decode('hex')
 P2P_PORT = 13333
 ADDRESS_VERSION = 0
 RPC_PORT = 13332
-RPC_CHECK = defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'terracoinaddress' in (yield bitcoind.rpc_help()) and
-            not (yield bitcoind.rpc_getinfo())['testnet']
+RPC_CHECK = defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'terracoinaddress' in (yield starwelsd.rpc_help()) and
+            not (yield starwelsd.rpc_getinfo())['testnet']
         ))
 SUBSIDY_FUNC = lambda height: 20*100000000 >> (height + 1)//1050000
 POW_FUNC = data.hash256

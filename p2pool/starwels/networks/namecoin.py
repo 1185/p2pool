@@ -11,9 +11,9 @@ P2P_PREFIX = 'f9beb4fe'.decode('hex')
 P2P_PORT = 8334
 ADDRESS_VERSION = 52
 RPC_PORT = 8336
-RPC_CHECK = defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'namecoinaddress' in (yield bitcoind.rpc_help()) and
-            not (yield bitcoind.rpc_getinfo())['testnet']
+RPC_CHECK = defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'namecoinaddress' in (yield starwelsd.rpc_help()) and
+            not (yield starwelsd.rpc_getinfo())['testnet']
         ))
 SUBSIDY_FUNC = lambda height: 50*100000000 >> (height + 1)//210000
 POW_FUNC = data.hash256

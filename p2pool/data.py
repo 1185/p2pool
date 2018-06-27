@@ -9,7 +9,7 @@ import time
 from twisted.python import log
 
 import p2pool
-from p2pool.bitcoin import data as bitcoin_data, script, sha256
+from p2pool.starwels import data as starwels_data, script, sha256
 from p2pool.util import math, forest, pack
 
 def parse_bip0034(coinbase):
@@ -67,7 +67,7 @@ class NewShare(object):
         ('version', pack.VarIntType()),
         ('previous_block', pack.PossiblyNoneType(0, pack.IntType(256))),
         ('timestamp', pack.IntType(32)),
-        ('bits', bitcoin_data.FloatingIntegerType()),
+        ('bits', starwels_data.FloatingIntegerType()),
         ('nonce', pack.IntType(32)),
     ])
     
@@ -85,8 +85,8 @@ class NewShare(object):
         ('new_transaction_hashes', pack.ListType(pack.IntType(256))),
         ('transaction_hash_refs', pack.ListType(pack.VarIntType(), 2)), # pairs of share_count, tx_count
         ('far_share_hash', pack.PossiblyNoneType(0, pack.IntType(256))),
-        ('max_bits', bitcoin_data.FloatingIntegerType()),
-        ('bits', bitcoin_data.FloatingIntegerType()),
+        ('max_bits', starwels_data.FloatingIntegerType()),
+        ('bits', starwels_data.FloatingIntegerType()),
         ('timestamp', pack.IntType(32)),
         ('absheight', pack.IntType(32)),
         ('abswork', pack.IntType(128)),
@@ -127,8 +127,8 @@ class NewShare(object):
             pre_target = 2**256//(net.SHARE_PERIOD*attempts_per_second) - 1 if attempts_per_second else 2**256-1
             pre_target2 = math.clip(pre_target, (previous_share.max_target*9//10, previous_share.max_target*11//10))
             pre_target3 = math.clip(pre_target2, (net.MIN_TARGET, net.MAX_TARGET))
-        max_bits = bitcoin_data.FloatingInteger.from_target_upper_bound(pre_target3)
-        bits = bitcoin_data.FloatingInteger.from_target_upper_bound(math.clip(desired_target, (pre_target3//30, pre_target3)))
+        max_bits = starwels_data.FloatingInteger.from_target_upper_bound(pre_target3)
+        bits = starwels_data.FloatingInteger.from_target_upper_bound(math.clip(desired_target, (pre_target3//30, pre_target3)))
         
         new_transaction_hashes = []
         new_transaction_size = 0
@@ -146,10 +146,10 @@ class NewShare(object):
             if tx_hash in tx_hash_to_this:
                 this = tx_hash_to_this[tx_hash]
                 if known_txs is not None:
-                    all_transaction_size += bitcoin_data.tx_type.packed_size(known_txs[tx_hash])
+                    all_transaction_size += starwels_data.tx_type.packed_size(known_txs[tx_hash])
             else:
                 if known_txs is not None:
-                    this_size = bitcoin_data.tx_type.packed_size(known_txs[tx_hash])
+                    this_size = starwels_data.tx_type.packed_size(known_txs[tx_hash])
                     if new_transaction_size + this_size > 1000000: # only allow 1000 kB of new txns/share
                         break
                     new_transaction_size += this_size
@@ -173,12 +173,12 @@ class NewShare(object):
         
         weights, total_weight, donation_weight = tracker.get_cumulative_weights(previous_share.share_data['previous_share_hash'] if previous_share is not None else None,
             max(0, min(height, net.REAL_CHAIN_LENGTH) - 1),
-            65535*net.SPREAD*bitcoin_data.target_to_average_attempts(block_target),
+            65535*net.SPREAD*starwels_data.target_to_average_attempts(block_target),
         )
         assert total_weight == sum(weights.itervalues()) + donation_weight, (total_weight, sum(weights.itervalues()) + donation_weight)
         
         amounts = dict((script, share_data['subsidy']*(199*weight)//(200*total_weight)) for script, weight in weights.iteritems()) # 99.5% goes according to weights prior to this share
-        this_script = bitcoin_data.pubkey_hash_to_script2(share_data['pubkey_hash'])
+        this_script = starwels_data.pubkey_hash_to_script2(share_data['pubkey_hash'])
         amounts[this_script] = amounts.get(this_script, 0) + share_data['subsidy']//200 # 0.5% goes to block finder
         amounts[DONATION_SCRIPT] = amounts.get(DONATION_SCRIPT, 0) + share_data['subsidy'] - sum(amounts.itervalues()) # all that's left over is the donation weight and some extra satoshis due to rounding
         
@@ -196,7 +196,7 @@ class NewShare(object):
             new_transaction_hashes=new_transaction_hashes,
             transaction_hash_refs=transaction_hash_refs,
             absheight=((previous_share.absheight if previous_share is not None else 0) + 1) % 2**32,
-            abswork=((previous_share.abswork if previous_share is not None else 0) + bitcoin_data.target_to_average_attempts(bits.target)) % 2**128,
+            abswork=((previous_share.abswork if previous_share is not None else 0) + starwels_data.target_to_average_attempts(bits.target)) % 2**128,
         )
 
         if desired_timestamp > previous_share.timestamp + 180:
@@ -230,8 +230,8 @@ class NewShare(object):
                 share_info=share_info,
                 ref_merkle_link=dict(branch=[], index=0),
                 last_txout_nonce=last_txout_nonce,
-                hash_link=prefix_to_hash_link(bitcoin_data.tx_type.pack(gentx)[:-32-8-4], cls.gentx_before_refhash),
-                merkle_link=bitcoin_data.calculate_merkle_link([None] + other_transaction_hashes, 0),
+                hash_link=prefix_to_hash_link(starwels_data.tx_type.pack(gentx)[:-32-8-4], cls.gentx_before_refhash),
+                merkle_link=starwels_data.calculate_merkle_link([None] + other_transaction_hashes, 0),
             ))
             assert share.header == header # checks merkle_root
             return share
@@ -240,7 +240,7 @@ class NewShare(object):
     
     @classmethod
     def get_ref_hash(cls, net, share_info, ref_merkle_link):
-        return pack.IntType(256).pack(bitcoin_data.check_merkle_link(bitcoin_data.hash256(cls.ref_type.pack(dict(
+        return pack.IntType(256).pack(starwels_data.check_merkle_link(starwels_data.hash256(cls.ref_type.pack(dict(
             identifier=net.IDENTIFIER,
             share_info=share_info,
         ))), ref_merkle_link))
@@ -270,7 +270,7 @@ class NewShare(object):
         self.target = self.share_info['bits'].target
         self.timestamp = self.share_info['timestamp']
         self.previous_hash = self.share_data['previous_share_hash']
-        self.new_script = bitcoin_data.pubkey_hash_to_script2(self.share_data['pubkey_hash'])
+        self.new_script = starwels_data.pubkey_hash_to_script2(self.share_data['pubkey_hash'])
         self.desired_version = self.share_data['desired_version']
         self.absheight = self.share_info['absheight']
         self.abswork = self.share_info['abswork']
@@ -290,10 +290,10 @@ class NewShare(object):
             self.get_ref_hash(net, self.share_info, contents['ref_merkle_link']) + pack.IntType(64).pack(self.contents['last_txout_nonce']) + pack.IntType(32).pack(0),
             self.gentx_before_refhash,
         )
-        merkle_root = bitcoin_data.check_merkle_link(self.gentx_hash, self.merkle_link)
+        merkle_root = starwels_data.check_merkle_link(self.gentx_hash, self.merkle_link)
         self.header = dict(self.min_header, merkle_root=merkle_root)
-        self.pow_hash = net.PARENT.POW_FUNC(bitcoin_data.block_header_type.pack(self.header))
-        self.hash = self.header_hash = bitcoin_data.hash256(bitcoin_data.block_header_type.pack(self.header))
+        self.pow_hash = net.PARENT.POW_FUNC(starwels_data.block_header_type.pack(self.header))
+        self.hash = self.header_hash = starwels_data.hash256(starwels_data.block_header_type.pack(self.header))
         
         if self.target > net.MAX_TARGET:
             from p2pool import p2p
@@ -347,10 +347,10 @@ class NewShare(object):
         assert other_tx_hashes2 == other_tx_hashes
         if share_info != self.share_info:
             raise ValueError('share_info invalid')
-        if bitcoin_data.hash256(bitcoin_data.tx_type.pack(gentx)) != self.gentx_hash:
+        if starwels_data.hash256(starwels_data.tx_type.pack(gentx)) != self.gentx_hash:
             raise ValueError('''gentx doesn't match hash_link''')
         
-        if bitcoin_data.calculate_merkle_link([None] + other_tx_hashes, 0) != self.merkle_link:
+        if starwels_data.calculate_merkle_link([None] + other_tx_hashes, 0) != self.merkle_link:
             raise ValueError('merkle_link and other_tx_hashes do not match')
         
         return gentx # only used by as_block
@@ -381,7 +381,7 @@ class NewShare(object):
         if other_txs is None:
             pass
         else:
-            all_txs_size = sum(bitcoin_data.tx_type.packed_size(tx) for tx in other_txs)
+            all_txs_size = sum(starwels_data.tx_type.packed_size(tx) for tx in other_txs)
             if all_txs_size > 1000000:
                 return True, 'txs over block size limit'
         
@@ -409,9 +409,9 @@ class WeightsSkipList(forest.TrackerSkipList):
     # share_count, weights, total_weight
     
     def get_delta(self, element):
-        from p2pool.bitcoin import data as bitcoin_data
+        from p2pool.starwels import data as starwels_data
         share = self.tracker.items[element]
-        att = bitcoin_data.target_to_average_attempts(share.target)
+        att = starwels_data.target_to_average_attempts(share.target)
         return 1, {share.new_script: att*(65535-share.share_data['donation'])}, att*65535, att*share.share_data['donation']
     
     def combine_deltas(self, (share_count1, weights1, total_weight1, total_donation_weight1), (share_count2, weights2, total_weight2, total_donation_weight2)):
@@ -445,12 +445,12 @@ class WeightsSkipList(forest.TrackerSkipList):
 class OkayTracker(forest.Tracker):
     def __init__(self, net):
         forest.Tracker.__init__(self, delta_type=forest.get_attributedelta_type(dict(forest.AttributeDelta.attrs,
-            work=lambda share: bitcoin_data.target_to_average_attempts(share.target),
-            min_work=lambda share: bitcoin_data.target_to_average_attempts(share.max_target),
+            work=lambda share: starwels_data.target_to_average_attempts(share.target),
+            min_work=lambda share: starwels_data.target_to_average_attempts(share.max_target),
         )))
         self.net = net
         self.verified = forest.SubsetTracker(delta_type=forest.get_attributedelta_type(dict(forest.AttributeDelta.attrs,
-            work=lambda share: bitcoin_data.target_to_average_attempts(share.target),
+            work=lambda share: starwels_data.target_to_average_attempts(share.target),
         )), subset_of=self)
         self.get_cumulative_weights = WeightsSkipList(self)
     
@@ -562,9 +562,9 @@ class OkayTracker(forest.Tracker):
             target_cutoff = 2**256-1
         
         if p2pool.DEBUG:
-            print 'Desire %i shares. Cutoff: %s old diff>%.2f' % (len(desired), math.format_dt(time.time() - timestamp_cutoff), bitcoin_data.target_to_difficulty(target_cutoff))
+            print 'Desire %i shares. Cutoff: %s old diff>%.2f' % (len(desired), math.format_dt(time.time() - timestamp_cutoff), starwels_data.target_to_difficulty(target_cutoff))
             for peer_addr, hash, ts, targ in desired:
-                print '   ', None if peer_addr is None else '%s:%i' % peer_addr, format_hash(hash), math.format_dt(time.time() - ts), bitcoin_data.target_to_difficulty(targ), ts >= timestamp_cutoff, targ <= target_cutoff
+                print '   ', None if peer_addr is None else '%s:%i' % peer_addr, format_hash(hash), math.format_dt(time.time() - ts), starwels_data.target_to_difficulty(targ), ts >= timestamp_cutoff, targ <= target_cutoff
         
         return best, [(peer_addr, hash) for peer_addr, hash, ts, targ in desired if ts >= timestamp_cutoff], decorated_heads, bad_peer_addresses
     
@@ -601,10 +601,10 @@ def get_average_stale_prop(tracker, share_hash, lookbehind):
 def get_stale_counts(tracker, share_hash, lookbehind, rates=False):
     res = {}
     for share in tracker.get_chain(share_hash, lookbehind - 1):
-        res['good'] = res.get('good', 0) + bitcoin_data.target_to_average_attempts(share.target)
+        res['good'] = res.get('good', 0) + starwels_data.target_to_average_attempts(share.target)
         s = share.share_data['stale_info']
         if s is not None:
-            res[s] = res.get(s, 0) + bitcoin_data.target_to_average_attempts(share.target)
+            res[s] = res.get(s, 0) + starwels_data.target_to_average_attempts(share.target)
     if rates:
         dt = tracker.items[share_hash].timestamp - tracker.items[tracker.get_nth_parent_hash(share_hash, lookbehind - 1)].timestamp
         res = dict((k, v/dt) for k, v in res.iteritems())
@@ -622,7 +622,7 @@ def get_user_stale_props(tracker, share_hash, lookbehind):
     return dict((pubkey_hash, stale/total) for pubkey_hash, (stale, total) in res.iteritems())
 
 def get_expected_payouts(tracker, best_share_hash, block_target, subsidy, net):
-    weights, total_weight, donation_weight = tracker.get_cumulative_weights(best_share_hash, min(tracker.get_height(best_share_hash), net.REAL_CHAIN_LENGTH), 65535*net.SPREAD*bitcoin_data.target_to_average_attempts(block_target))
+    weights, total_weight, donation_weight = tracker.get_cumulative_weights(best_share_hash, min(tracker.get_height(best_share_hash), net.REAL_CHAIN_LENGTH), 65535*net.SPREAD*starwels_data.target_to_average_attempts(block_target))
     res = dict((script, subsidy*weight//total_weight) for script, weight in weights.iteritems())
     res[DONATION_SCRIPT] = res.get(DONATION_SCRIPT, 0) + subsidy - sum(res.itervalues())
     return res
@@ -630,10 +630,10 @@ def get_expected_payouts(tracker, best_share_hash, block_target, subsidy, net):
 def get_desired_version_counts(tracker, best_share_hash, dist):
     res = {}
     for share in tracker.get_chain(best_share_hash, dist):
-        res[share.desired_version] = res.get(share.desired_version, 0) + bitcoin_data.target_to_average_attempts(share.target)
+        res[share.desired_version] = res.get(share.desired_version, 0) + starwels_data.target_to_average_attempts(share.target)
     return res
 
-def get_warnings(tracker, best_share, net, bitcoind_getinfo, bitcoind_work_value):
+def get_warnings(tracker, best_share, net, starwelsd_getinfo, starwelsd_work_value):
     res = []
     
     desired_version_counts = get_desired_version_counts(tracker, best_share,
@@ -644,16 +644,16 @@ def get_warnings(tracker, best_share, net, bitcoind_getinfo, bitcoind_work_value
             'An upgrade is likely necessary. Check http://p2pool.forre.st/ for more information.' % (
                 majority_desired_version, 100*desired_version_counts[majority_desired_version]/sum(desired_version_counts.itervalues())))
     
-    if bitcoind_getinfo['errors'] != '':
-        if 'This is a pre-release test build' not in bitcoind_getinfo['errors']:
-            res.append('(from bitcoind) %s' % (bitcoind_getinfo['errors'],))
+    if starwelsd_getinfo['errors'] != '':
+        if 'This is a pre-release test build' not in starwelsd_getinfo['errors']:
+            res.append('(from starwelsd) %s' % (starwelsd_getinfo['errors'],))
     
-    version_warning = getattr(net, 'VERSION_WARNING', lambda v: None)(bitcoind_getinfo['version'])
+    version_warning = getattr(net, 'VERSION_WARNING', lambda v: None)(starwelsd_getinfo['version'])
     if version_warning is not None:
         res.append(version_warning)
     
-    if time.time() > bitcoind_work_value['last_update'] + 60:
-        res.append('''LOST CONTACT WITH BITCOIND for %s! Check that it isn't frozen or dead!''' % (math.format_dt(time.time() - bitcoind_work_value['last_update']),))
+    if time.time() > starwelsd_work_value['last_update'] + 60:
+        res.append('''LOST CONTACT WITH STARWELSD for %s! Check that it isn't frozen or dead!''' % (math.format_dt(time.time() - starwelsd_work_value['last_update']),))
     
     return res
 

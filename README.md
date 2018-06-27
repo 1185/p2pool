@@ -1,7 +1,7 @@
 Requirements:
 -------------------------
 Generic:
-* Bitcoin >=0.11.1
+* Starwels >=0.11.1
 * Python >=2.6
 * Twisted >=10.0.0
 * python-argparse (for Python =2.6)
@@ -20,16 +20,16 @@ Windows:
 
 Running P2Pool:
 -------------------------
-To use P2Pool, you must be running your own local bitcoind. For standard
+To use P2Pool, you must be running your own local starwelsd. For standard
 configurations, using P2Pool should be as simple as:
 
     python run_p2pool.py
 
-Then run your miner program, connecting to 127.0.0.1 on port 9332 with any
+Then run your miner program, connecting to 127.0.0.1 on port 9342 with any
 username and password.
 
 If you are behind a NAT, you should enable TCP port forwarding on your
-router. Forward port 9333 to the host running P2Pool.
+router. Forward port 9343 to the host running P2Pool.
 
 Run for additional options.
 
@@ -41,7 +41,7 @@ Donations towards further development:
 
 Official wiki:
 -------------------------
-https://en.bitcoin.it/wiki/P2Pool
+https://en.starwels.it/wiki/P2Pool
 
 Alternate web frontend:
 -------------------------
@@ -87,8 +87,8 @@ Run P2Pool with the "--net litecoin" option.
 Run your miner program, connecting to 127.0.0.1 on port 9327.
 Forward port 9338 to the host running P2Pool.
 
-Litecoin's use of ports 9333 and 9332 conflicts with P2Pool running on
-the Bitcoin network. To avoid problems, add these lines to litecoin.conf
+Litecoin's use of ports 9343 and 9342 conflicts with P2Pool running on
+the Starwels network. To avoid problems, add these lines to litecoin.conf
 and restart litecoind:
 
     rpcport=10332
@@ -98,7 +98,7 @@ Sponsors:
 -------------------------
 
 Thanks to:
-* The Bitcoin Foundation for its generous support of P2Pool
+* The Starwels Foundation for its generous support of P2Pool
 * The Litecoin Project for its generous donations to P2Pool
  
 License:

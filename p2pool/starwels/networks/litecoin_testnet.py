@@ -8,12 +8,12 @@ from p2pool.util import pack
 
 
 P2P_PREFIX = 'fcc1b7dc'.decode('hex')
-P2P_PORT = 19333
+P2P_PORT = 19343
 ADDRESS_VERSION = 111
-RPC_PORT = 19332
-RPC_CHECK = defer.inlineCallbacks(lambda bitcoind: defer.returnValue(
-            'litecoinaddress' in (yield bitcoind.rpc_help()) and
-            (yield bitcoind.rpc_getinfo())['testnet']
+RPC_PORT = 19342
+RPC_CHECK = defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
+            'litecoinaddress' in (yield starwelsd.rpc_help()) and
+            (yield starwelsd.rpc_getinfo())['testnet']
         ))
 SUBSIDY_FUNC = lambda height: 50*100000000 >> (height + 1)//840000
 POW_FUNC = lambda data: pack.IntType(256).unpack(__import__('ltc_scrypt').getPoWHash(data))
