@@ -13,7 +13,7 @@ ADDRESS_VERSION = 0
 RPC_PORT = 8342
 RPC_CHECK = defer.inlineCallbacks(lambda starwelsd: defer.returnValue(
             (yield helper.check_genesis_block(starwelsd, '000000003d69a915e9da53348c5c272978bb743442e3a6341c11061c125811a2')) and
-            not (yield starwelsd.rpc_getinfo())['testnet']
+            (yield starwelsd.rpc_getblockchaininfo())['chain'] != 'test'
         ))
 SUBSIDY_FUNC = lambda height: 50*100000000 >> (height + 1)//210000
 POW_FUNC = data.hash256
