@@ -19,7 +19,7 @@ MIN_TARGET = 0
 MAX_TARGET = 2**256//2**32 - 1
 PERSIST = False
 WORKER_PORT = 9342
-BOOTSTRAP_ADDRS = 'ml.toom.im ml.toom.im:9336 ml.toom.im:9334 93.77.99.166 whortonda.noip.me:9343 mai-fork.coinpool.pw:9335 crypto.office-on-the.net:9335'.split(' ')
+BOOTSTRAP_ADDRS = 'ml.toom.im ml.toom.im:9336 ml.toom.im:9334 93.77.99.166 91.240.86.126 51.15.94.149 whortonda.noip.me:9343 mai-fork.coinpool.pw:9335 crypto.office-on-the.net:9335'.split(' ')
 ANNOUNCE_CHANNEL = '#p2pool'
 VERSION_CHECK = lambda v: None if 100000 <= v else 'Starwels version too old. Upgrade to 0.11.2 or newer!' # not a bug. BIP65 support is ensured by SOFTFORKS_REQUIRED
 VERSION_WARNING = lambda v: None
